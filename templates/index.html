@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NSFW Image Detection</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 50px;
+        }
+        .container {
+            max-width: 600px;
+        }
+        .result {
+            margin-top: 20px;
+        }
+        .censored {
+            filter: blur(15px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center">NSFW Image Detection</h1>
+        <form id="upload-form">
+            <div class="form-group">
+                <label for="file">Upload an image:</label>
+                <input type="file" class="form-control-file" id="file" name="file" accept="image/*" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+        <div id="result" class="result"></div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#upload-form').on('submit', function (e) {
+                e.preventDefault();
+                var formData = new FormData(this);
+                $.ajax({
+                    url: '/upload',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        var resultDiv = $('#result');
+                        resultDiv.empty();
+                        if (response.label === 'nsfw') {
+                            resultDiv.html('<p>Tu imagen se considera NSFW, tu imagen será censurada:</p>' +
+                                '<img src="' + response.file_path + '" class="img-fluid censored">');
+                        } else {
+                            resultDiv.html('<p>Tu imagen es normal:</p>' +
+                                '<img src="' + response.file_path + '" class="img-fluid">');
+                        }
+                    },
+                    error: function (error) {
+                        $('#result').html('<div class="alert alert-danger">Error: ' + error.responseJSON.error + '</div>');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
